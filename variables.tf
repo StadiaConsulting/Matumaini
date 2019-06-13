@@ -1,5 +1,10 @@
+variable "AWSRegion" {
+  description = "Default region for Orion Growth's AWS services."
+  default = "us-east-1"
+}
+
 data "aws_availability_zones" "AZ" {}
-data "aws_region" "Region" {}
+data "aws_region" "AWSRegion" {}
 data "aws_billing_service_account" "Account" {}
 
 data "aws_s3_bucket" "AppCodeBucketRef" {
@@ -39,7 +44,7 @@ variable "BaseS3Bucket" {
     default = "kch-matumaini"
 }
 variable "DBTable" {
-    default = "KCHTable" 
+    default = "KCHTable"
 }
 variable "CodeS3Bucket" {
     default = "kch-matumaini-source"

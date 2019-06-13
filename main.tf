@@ -1,5 +1,5 @@
 provider "aws" {
-    region = "us-east-1"
+    region = var.AWSRegion
 }
 
 resource "aws_s3_bucket" "StaticWebsiteBucket" {
@@ -19,7 +19,7 @@ resource "aws_s3_bucket" "StaticWebsiteBucket" {
 }
 resource "aws_s3_bucket" "AppCodeBucket" {
     bucket  = "${var.CodeS3Bucket}"
-    
+
     lifecycle {
       create_before_destroy = true
     }
@@ -173,11 +173,12 @@ resource "aws_route_table_association" "PrivateRouteTableTwoAssociation" {
 
 resource "aws_vpc_endpoint" "DynamoDBEndpoint" {
   vpc_id = "${aws_vpc.VPC.id}"
-  route_table_ids = 
-    ["${aws_route_table.PrivateRouteTableOne.id}",
-     "${aws_route_table.PrivateRouteTableTwo.id}"]
+  route_table_ids = [
+    "${aws_route_table.PrivateRouteTableOne.id}",
+    "${aws_route_table.PrivateRouteTableTwo.id}"
+   ]
   policy = "${file("Configs/dynamodb-endpoint-policy.json")}"
-  service_name = "com.amazonaws.${data.aws_region.Region.name}.dynamodb"
+  service_name = "com.amazonaws.${data.aws_region.AWSRegion.name}.dynamodb"
 }
 
 resource "aws_security_group" "FargateContainerSecurityGroup" {
@@ -442,9 +443,9 @@ resource "aws_iam_policy" "KCHMatumainiService-CodeBuildServicePolicy" {
 				"codecommit:Get*",
 				"codecommit:GitPull"
 			],
-			"Resource": 
+			"Resource":
 
-					"arn:aws:codecommit:${data.aws_region.Region.name}:${data.aws_billing_service_account.Account.id}:KCHMatumainiServiceRepository"
+					"arn:aws:codecommit:${data.aws_region.AWSRegion.name}:${data.aws_billing_service_account.Account.id}:KCHMatumainiServiceRepository"
 		},
 		{
 			"Effect": "Allow",

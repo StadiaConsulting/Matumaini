@@ -15,19 +15,19 @@ resource "aws_codebuild_project" "example" {
     image_pull_credentials_type = "CODEBUILD"
 
     environment_variable {
-      "name"  = "AWS_ACCOUNT_ID"
-      "value" = "${data.aws_billing_service_account.Account.id}"
+      name  = "AWS_ACCOUNT_ID"
+      value = "${data.aws_billing_service_account.Account.id}"
     }
 
     environment_variable {
-      "name"  = "AWS_DEFAULT_REGION"
-      "value" = "${data.aws_region.Region.name}"
+      name  = "AWS_DEFAULT_REGION"
+      value = "${data.aws_region.AWSRegion.name}"
     }
   }
 
   source {
     type = "CODECOMMIT"
-    location        = "https://git-codecommit.${data.aws_region.Region.name}.amazonaws.com/v1/repos/KCHMatumainiService-Repository"
+    location        = "https://git-codecommit.${data.aws_region.AWSRegion.name}.amazonaws.com/v1/repos/KCHMatumainiService-Repository"
   }
 }
 
@@ -87,9 +87,9 @@ resource "aws_codepipeline" "KCHMatumainiServiceCICDPipeline" {
       input_artifacts  = ["KCHMatumainiService-BuildArtifact"]
       version          = "1"
 
-      configuration {
-        ClusterName     = "KCHMatumaini-Cluster"
-        ServiceName   = "KCHMatumaini-Service"
+      configuration = {
+        ClusterName = "KCHMatumaini-Cluster"
+        ServiceName = "KCHMatumaini-Service"
         FileName = "imagedefinitions.json"
 
       }
