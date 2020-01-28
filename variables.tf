@@ -1,5 +1,5 @@
 variable "AWSRegion" {
-  description = "Default region for Orion Growth's AWS services."
+  description = "Default region for Stadia Consulting's AWS services."
   default = "us-east-1"
 }
 
@@ -7,15 +7,15 @@ data "aws_availability_zones" "AZ" {}
 data "aws_region" "AWSRegion" {}
 data "aws_billing_service_account" "Account" {}
 
-data "aws_s3_bucket" "AppCodeBucketRef" {
-    bucket = "${aws_s3_bucket.AppCodeBucket.id}"
-}
-data "aws_iam_role" "CodeBuildRef" {
-    name = "${aws_iam_role.KCHMatumainiServiceCodeBuildServiceRole.id}"
-}
-data "aws_iam_role" "CodePipelineRef" {
-    name = "${aws_iam_role.KCHMatumainiServiceCodePipelineServiceRole.id}"
-}
+//data "aws_s3_bucket" "AppCodeBucketRef" {
+//    bucket = "${aws_s3_bucket.AppCodeBucket.id}"
+//}
+//data "aws_iam_role" "CodeBuildRef" {
+//    name = "${aws_iam_role.KCHMatumainiServiceCodeBuildServiceRole.id}"
+//}
+//data "aws_iam_role" "CodePipelineRef" {
+//    name = "${aws_iam_role.KCHMatumainiServiceCodePipelineServiceRole.id}"
+//}
 #data "aws_iam_role" "ECSServiceRef" {
 #    name = "${aws_iam_role.EcsServiceRole.arn}"
 #}
@@ -46,12 +46,12 @@ variable "BaseS3Bucket" {
 variable "DBTable" {
     default = "KCHTable"
 }
-variable "CodeS3Bucket" {
-    default = "kch-matumaini-source"
-}
-variable "CodeCommitRepo" {
-    default = "kch-matumaini-repo"
-}
+//variable "CodeS3Bucket" {
+//    default = "kch-matumaini-source"
+//}
+//variable "CodeCommitRepo" {
+//    default = "kch-matumaini-repo"
+//}
 variable "DockerAppName" {
     default ="kchmatumaini"
 }

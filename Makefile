@@ -6,32 +6,22 @@ CHECK := @base -c '\
 	if [[ $(INSPECT) -ne 0 ]]; \
 	then exit $(INSPECT); fi' VALUE
 
-.PHONY:	app-build cicd-build clean app-plan cicd-plan
+.PHONY:	build clean plan
 
-app-build:
+build:
 	${INFO} "building app infrastructure"
 	@ terraform apply
 	${INFO} "build complete"
-
-cicd-build:
-		${INFO} "building CICD infrastructure"
-		@ cd CICD && terraform apply
-		${INFO} "build complete"
 
 clean:
 	${INFO} "cleaning"
 	@ terraform destroy
 	${INFO} "clean compete"
 
-app-plan:
+plan:
 	${INFO} "planning"
 	@ terraform plan
 	${INFO} "plan complete"
-
-cicd-plan:
-		${INFO} "building CICD infrastructure"
-		@ cd CICD && terraform plan
-		${INFO} "build complete"
 
 # Cosmetics - Setting colors to be used in output
 # list of colors - https://misc.flogisoft.com/bash/tip_colors_and_formatting
