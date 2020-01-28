@@ -1,6 +1,5 @@
 provider "aws" {
     region = var.AWSRegion
-    shared_credentials_file = "~/.aws/credentials"
 }
 
 resource "aws_s3_bucket" "StaticWebsiteBucket" {
