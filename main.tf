@@ -6,7 +6,13 @@ provider "aws" {
 // Create static S3 website
 resource "aws_s3_bucket" "StaticWebBucket" {
     bucket  = "${var.BaseS3Bucket}"
+    acl = "public-read"
+    policy = "${file("configs/website-bucket-policy.json")}"
 
+    website {
+    index_document = "index.html"
+    error_document = "error.html"
+  }
     lifecycle {
       create_before_destroy = true
     }
@@ -122,7 +128,7 @@ resource "aws_vpc_endpoint" "DynamoDBEndpoint" {
     "${aws_route_table.PrivateRouteTableOne.id}",
     "${aws_route_table.PrivateRouteTableTwo.id}"
    ]
-  policy = "${file("Configs/dynamodb-endpoint-policy.json")}"
+  policy = "${file("configs/dynamodb-endpoint-policy.json")}"
   service_name = "com.amazonaws.${data.aws_region.AWSRegion.name}.dynamodb"
 }
 # End of Core infrastructure build
@@ -262,7 +268,7 @@ resource "aws_iam_policy" "ECSTaskRolePolicy" {
 				"dynamodb:UpdateItem",
 				"dynamodb:GetItem"
 			],
-			"Resource": "arn:aws:dynamodb:*:*:table/KCHTable*"
+			"Resource": "arn:aws:dynamodb:*:*:table/${var.DBTable}*"
 		}
 	]
 }
@@ -275,168 +281,30 @@ resource "aws_iam_policy_attachment" "EcsServiceTaskRoleAttachment" {
   policy_arn = "${aws_iam_policy.ECSTaskRolePolicy.arn}"
 }
 
-// Break out CICD build from Matumaini infrastructure build
-//resource "aws_iam_role" "KCHMatumainiServiceCodePipelineServiceRole" {
-//  name = "KCHMatumainiServiceCodePipelineServiceRole"
-//  assume_role_policy = <<EOF
-//{
-//  "Version": "2012-10-17",
-//  "Statement": [
-//					{
-//						"Effect": "Allow",
-//						"Principal": {
-//							"Service": [
-//								"codepipeline.amazonaws.com"]
-//						},
-//						"Action": [
-//							"sts:AssumeRole"]
-//					}
-//				]
-//			}
-//EOF
-//}
-//resource "aws_iam_policy" "KCHMatumainiService-codepipeline-service-policy" {
-//  path = "/"
-//
-//  policy = <<EOF
-//{
-//  "Version": "2012-10-17",
-//	"Statement": [
-//		{
-//			"Action": [
-//				"codecommit:GetBranch",
-//				"codecommit:GetCommit",
-//				"codecommit:UploadArchive",
-//				"codecommit:GetUploadArchiveStatus",
-//				"codecommit:CancelUploadArchive"
-//			],
-//			"Resource": "*",
-//			"Effect": "Allow"
-//		},
-//		{
-//			"Action": [
-//				"s3:GetObject",
-//				"s3:GetObjectVersion",
-//				"s3:GetBucketVersioning"
-//			],
-//			"Resource": "*",
-//			"Effect": "Allow"
-//		},
-//		{
-//			"Action": [
-//				"s3:PutObject"
-//			],
-//			"Resource": [
-//				"arn:aws:s3:::*"
-//			],
-//			"Effect": "Allow"
-//		},
-//		{
-//			"Action": [
-//				"elasticloadbalancing:*",
-//				"autoscaling:*",
-//				"cloudwatch:*",
-//				"ecs:*",
-//				"codebuild:*",
-//				"iam:PassRole"
-//			],
-//			"Resource": "*",
-//			"Effect": "Allow"
-//		}
-//	]
-//}
-//EOF
-//}
-
-
-
-//resource "aws_iam_policy" "KCHMatumainiService-CodeBuildServicePolicy" {
-//  path = "/"
-//
-//  policy = <<EOF
-//{
-//  "Version": "2012-10-17",
-//	"Statement": [
-//		{
-//			"Effect": "Allow",
-//			"Action": [
-//				"codecommit:ListBranches",
-//				"codecommit:ListRepositories",
-//				"codecommit:BatchGetRepositories",
-//				"codecommit:Get*",
-//				"codecommit:GitPull"
-//			],
-//			"Resource":
-//
-//					"arn:aws:codecommit:${data.aws_region.AWSRegion.name}:${data.aws_billing_service_account.Account.id}:KCHMatumainiServiceRepository"
-//		},
-//		{
-//			"Effect": "Allow",
-//			"Action": [
-//				"logs:CreateLogGroup",
-//				"logs:CreateLogStream",
-//				"logs:PutLogEvents"
-//			],
-//			"Resource": "*"
-//		},
-//		{
-//			"Effect": "Allow",
-//			"Action": [
-//				"s3:PutObject",
-//				"s3:GetObject",
-//				"s3:GetObjectVersion",
-//				"s3:ListBucket"
-//			],
-//			"Resource": "*"
-//		},
-//		{
-//			"Effect": "Allow",
-//			"Action": [
-//				"ecr:InitiateLayerUpload",
-//				"ecr:GetAuthorizationToken"
-//			],
-//			"Resource": "*"
-//		}
-//	]
-//}
-//EOF
-//}
-
-
-
-//resource "aws_ecr_repository" "KCHMatumainiECR" {
-//  name = "${var.DockerAppName}/service"
-//}
-resource "aws_ecs_cluster" "KCHMatumainiECSCluster" {
+resource "aws_ecs_cluster" "ECSCluster" {
   name = "${var.ECSCluster}"
 }
 
 
-resource "aws_cloudwatch_log_group" "KCHMatumainiLogGroup" {
+resource "aws_cloudwatch_log_group" "LogGroup" {
   name = "${var.DockerAppName}-logs"
 }
 
-
-
-
-
-#resource "aws_ecs_task_definition" "KCHMatumainiECSTaskDef" {
-#  family                = "kchmatumainiservice"
-#  container_definitions = "${file("Configs/service-definition.json")}"
-#}
-resource "aws_ecs_task_definition" "KCHMatumainiECSTaskDef" {
-  family = "kchmatumainiservice"
+resource "aws_ecs_task_definition" "ECSTaskDef" {
+  family = "${var.ContainerService}"
   network_mode ="awsvpc"
   cpu = 256
   memory = 512
   requires_compatibilities = ["FARGATE"]
+  execution_role_arn = "${aws_iam_role.EcsServiceRole.arn}"
+  task_role_arn =  "${aws_iam_role.ECSTaskRole.arn}"
   container_definitions =<<EOF
 [
   {
     "cpu": 256,
     "image": "image",
     "memory": 512,
-    "name": "kchmatumainiservice",
+    "name": "${var.ContainerService}",
     "networkMode": "awsvpc",
     "portMappings": [
       {
@@ -450,9 +318,9 @@ EOF
 }
 
 resource "aws_ecs_service" "main" {
-  name            = "KCHMatumaini-Service"
-  cluster         = "${aws_ecs_cluster.KCHMatumainiECSCluster.id}"
-  task_definition = "${aws_ecs_task_definition.KCHMatumainiECSTaskDef.arn}"
+  name            = "${var.ECSService}"
+  cluster         = "${aws_ecs_cluster.ECSCluster.id}"
+  task_definition = "${aws_ecs_task_definition.ECSTaskDef.arn}"
   desired_count   = "1"
   launch_type     = "FARGATE"
 
@@ -463,8 +331,8 @@ resource "aws_ecs_service" "main" {
   }
 
   load_balancer {
-    target_group_arn = "${aws_lb_target_group.AppNLBTargetGroup.id}"
-    container_name   = "kchmatumainiservice"
+    target_group_arn = "${aws_lb_target_group.AppNLB_TG.id}"
+    container_name   = "${var.ContainerService}"
     container_port   = "8080"
   }
 
@@ -481,8 +349,8 @@ resource "aws_lb" "AppNLB" {
   enable_deletion_protection = false
 }
 
-resource "aws_lb_target_group" "AppNLBTargetGroup" {
-  name     = "${var.NLBTargetGroup}"
+resource "aws_lb_target_group" "AppNLB_TG" {
+  name     = "${var.NLB_TG}"
   port     = 8080
   protocol = "TCP"
   vpc_id   = "${aws_vpc.VPC.id}"
@@ -503,18 +371,13 @@ resource "aws_lb_listener" "AppNLBListener" {
 
   default_action {
     type             = "forward"
-    target_group_arn = "${aws_lb_target_group.AppNLBTargetGroup.arn}"
+    target_group_arn = "${aws_lb_target_group.AppNLB_TG.arn}"
   }
 }
 
 # Created this service link out of band.
 #aws iam create-service-linked-role --aws-service-name ecs.amazonaws.com
 
-
-//resource "aws_codecommit_repository" "AppCodeCommitRepo" {
-//  repository_name = "${var.CodeCommitRepo}"
-//  description     = "App Code Repository"
-//}
 
 
 

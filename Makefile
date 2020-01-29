@@ -10,17 +10,18 @@ CHECK := @base -c '\
 
 build-core:
 	${INFO} "building core infrastructure"
-	@ terraform apply
+	@ time terraform apply
 	${INFO} "build complete - core infrastructure"
 
 clean:
 	${INFO} "cleaning core infrastructure"
-	@ terraform destroy
+	@ clean-static-web.sh
+	@ time terraform destroy
 	${INFO} "clean compete - core infrastructure"
 
 plan core:
 	${INFO} "planning core infrastructure"
-	@ terraform plan
+	@ time terraform plan
 	${INFO} "plan complete - core infrastructure"
 
 # Cosmetics - Setting colors to be used in output

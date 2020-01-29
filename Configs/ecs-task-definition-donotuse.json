@@ -11,7 +11,7 @@
   "containerDefinitions": [
     {
       "name": "KCHMatumaini-Service",
-      "image": "422389313567.dkr.ecr.us-east-1.amazonaws.com/kchmatumaini/service:latest",
+      "image": "804524942427.dkr.ecr.us-east-1.amazonaws.com/kchmatumaini/service:latest",
       "portMappings": [
         {
           "containerPort": 8080,

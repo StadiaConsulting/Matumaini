@@ -31,8 +31,13 @@ variable "DBTable" {
 }
 
 variable "DockerAppName" {
-    default ="kchmatumaini"
+    default = "kchmatumaini"
 }
+
+variable "ContainerService" {
+    default = "kchmatumainiservice"
+}
+
 variable "ECSCluster" {
     default = "KCHMatumaini-Cluster"
 }
@@ -41,6 +46,6 @@ variable "ECSService" {
     default = "KCHMatumaini-Service"
 }
 
-variable "NLBTargetGroup" {
+variable "NLB_TG" {
     default = "KCHMatumaini-TG"
 }
