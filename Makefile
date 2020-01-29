@@ -6,22 +6,22 @@ CHECK := @base -c '\
 	if [[ $(INSPECT) -ne 0 ]]; \
 	then exit $(INSPECT); fi' VALUE
 
-.PHONY:	build clean plan
+.PHONY:	build-core clean plan-core
 
-build:
-	${INFO} "building app infrastructure"
+build-core:
+	${INFO} "building core infrastructure"
 	@ terraform apply
-	${INFO} "build complete"
+	${INFO} "build complete - core infrastructure"
 
 clean:
-	${INFO} "cleaning"
+	${INFO} "cleaning core infrastructure"
 	@ terraform destroy
-	${INFO} "clean compete"
+	${INFO} "clean compete - core infrastructure"
 
-plan:
-	${INFO} "planning"
+plan core:
+	${INFO} "planning core infrastructure"
 	@ terraform plan
-	${INFO} "plan complete"
+	${INFO} "plan complete - core infrastructure"
 
 # Cosmetics - Setting colors to be used in output
 # list of colors - https://misc.flogisoft.com/bash/tip_colors_and_formatting

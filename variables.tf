@@ -10,9 +10,7 @@ data "aws_billing_service_account" "Account" {}
 //data "aws_s3_bucket" "AppCodeBucketRef" {
 //    bucket = "${aws_s3_bucket.AppCodeBucket.id}"
 //}
-//data "aws_iam_role" "CodeBuildRef" {
-//    name = "${aws_iam_role.KCHMatumainiServiceCodeBuildServiceRole.id}"
-//}
+
 //data "aws_iam_role" "CodePipelineRef" {
 //    name = "${aws_iam_role.KCHMatumainiServiceCodePipelineServiceRole.id}"
 //}

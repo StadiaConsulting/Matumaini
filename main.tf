@@ -1,60 +1,11 @@
+# Variables set in variables.tf file
 provider "aws" {
     region = var.AWSRegion
 }
 
 
-//resource "aws_s3_bucket" "AppCodeBucket" {
-//    bucket  = "${var.CodeS3Bucket}"
-//
-//    lifecycle {
-//      create_before_destroy = true
-//    }
-//}
-//resource "aws_s3_bucket_policy" "AppCodeBucketPolicy" {
-//  bucket = "${aws_s3_bucket.AppCodeBucket.id}"
-//
-//  policy = <<EOF
-//{
-//    "Statement": [
-//      {
-//        "Sid": "WhitelistedGet",
-//        "Effect": "Allow",
-//        "Principal": {
-//          "AWS": [
-//            "${data.aws_iam_role.CodeBuildRef.arn}",
-//            "${data.aws_iam_role.CodePipelineRef.arn}"
-//          ]
-//        },
-//        "Action": [
-//          "s3:GetObject",
-//          "s3:GetObjectVersion",
-//          "s3:GetBucketVersioning"
-//        ],
-//        "Resource": [
-//          "arn:aws:s3:::${data.aws_s3_bucket.AppCodeBucketRef.id}/*",
-//          "arn:aws:s3:::${data.aws_s3_bucket.AppCodeBucketRef.id}"
-//        ]
-//      },
-//      {
-//        "Sid": "WhitelistedPut",
-//        "Effect": "Allow",
-//        "Principal": {
-//          "AWS": [
-//            "${data.aws_iam_role.CodeBuildRef.arn}",
-//            "${data.aws_iam_role.CodePipelineRef.arn}"
-//          ]
-//        },
-//        "Action": "s3:PutObject",
-//        "Resource": [
-//          "arn:aws:s3:::${data.aws_s3_bucket.AppCodeBucketRef.id}/*",
-//          "arn:aws:s3:::${data.aws_s3_bucket.AppCodeBucketRef.id}"
-//        ]
-//      }
-//    ]
-//}
-//  EOF
-//}
-
+# Build Core Infrastructure:
+# VPC with two Availaibility Zones.  Each AZ has one Private subnet, one Public subnet, one NAT Gateway.  Shared route table.
 resource "aws_vpc" "VPC" {
   cidr_block = "${var.CIDR}"
   enable_dns_support = true
@@ -166,7 +117,9 @@ resource "aws_vpc_endpoint" "DynamoDBEndpoint" {
   policy = "${file("Configs/dynamodb-endpoint-policy.json")}"
   service_name = "com.amazonaws.${data.aws_region.AWSRegion.name}.dynamodb"
 }
+# End of Core infrastructure build
 
+# Start ot build ECS Services for Matumaini Application
 resource "aws_security_group" "FargateContainerSecurityGroup" {
   vpc_id      = "${aws_vpc.VPC.id}"
   description = "Access to the fargate containers from the Internet"
@@ -387,32 +340,7 @@ resource "aws_iam_policy_attachment" "EcsServiceTaskRoleAttachment" {
 //EOF
 //}
 
-//resource "aws_iam_policy_attachment" "KCHMatumainiServiceCodePipelineServiceRoleAttachment" {
-//  name = "KCHMatumainiServiceCodePipelineServiceRoleAttachment"
-//  roles       = ["${aws_iam_role.KCHMatumainiServiceCodePipelineServiceRole.name}"]
-//  policy_arn = "${aws_iam_policy.KCHMatumainiService-codepipeline-service-policy.arn}"
-//}
 
-//resource "aws_iam_role" "KCHMatumainiServiceCodeBuildServiceRole" {
-//  name = "KCHMatumainiServiceCodeBuildServiceRole"
-//  assume_role_policy = <<EOF
-//{
-//  "Version": "2012-10-17",
-//  "Statement": [
-//					{
-//						"Effect": "Allow",
-//						"Principal": {
-//							"Service": [
-//								"codebuild.amazonaws.com"]
-//						},
-//						"Action": [
-//							"sts:AssumeRole"]
-//					}
-//				]
-//			}
-//
-//EOF
-//}
 
 //resource "aws_iam_policy" "KCHMatumainiService-CodeBuildServicePolicy" {
 //  path = "/"
@@ -466,11 +394,7 @@ resource "aws_iam_policy_attachment" "EcsServiceTaskRoleAttachment" {
 //EOF
 //}
 
-//resource "aws_iam_policy_attachment" "KCHMatumainiServiceCodeBuildServiceRoleAttachment" {
-//  name = "KCHMatumainiServiceCodeBuildServiceRoleAttachment"
-//  roles       = ["${aws_iam_role.KCHMatumainiServiceCodeBuildServiceRole.name}"]
-//  policy_arn = "${aws_iam_policy.KCHMatumainiService-CodeBuildServicePolicy.arn}"
-//}
+
 
 //resource "aws_ecr_repository" "KCHMatumainiECR" {
 //  name = "${var.DockerAppName}/service"
@@ -485,35 +409,7 @@ resource "aws_cloudwatch_log_group" "KCHMatumainiLogGroup" {
 }
 
 
-//resource "aws_ecr_repository_policy" "KCHMatumainiECRPolicy" {
-//  repository = "${aws_ecr_repository.KCHMatumainiECR.name}"
-//
-//  policy = <<EOF
-//{
-//  "Version": "2008-10-17",
-//  "Statement": [
-//    {
-//      "Sid": "AllowPushPull",
-//      "Effect": "Allow",
-//      "Principal": {
-//        "AWS": [
-//         "${aws_iam_role.KCHMatumainiServiceCodeBuildServiceRole.arn}"
-//        ]
-//      },
-//      "Action": [
-//        "ecr:GetDownloadUrlForLayer",
-//        "ecr:BatchGetImage",
-//        "ecr:BatchCheckLayerAvailability",
-//        "ecr:PutImage",
-//        "ecr:InitiateLayerUpload",
-//        "ecr:UploadLayerPart",
-//        "ecr:CompleteLayerUpload"
-//      ]
-//    }
-//  ]
-//}
-//EOF
-//}
+
 
 
 #resource "aws_ecs_task_definition" "KCHMatumainiECSTaskDef" {
@@ -641,9 +537,3 @@ output "REPLACE_ME_PRIVATE_SUBNET_TWO" {
 output "REPLACE_ME_SECURITY_GROUP_ID" {
   value = "${aws_security_group.FargateContainerSecurityGroup.id}"
 }
-//output "REPLACE_ME_CODEBUILD_ROLE_ARN" {
-//  value = "${aws_iam_role.KCHMatumainiServiceCodeBuildServiceRole.arn}"
-//}
-//output "REPLACE_ME_CODEPIPELINE_ROLE_ARN" {
-//  value = "${aws_iam_role.KCHMatumainiServiceCodePipelineServiceRole.arn}"
-//}
