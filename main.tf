@@ -3,6 +3,14 @@ provider "aws" {
     region = var.AWSRegion
 }
 
+// Create static S3 website
+resource "aws_s3_bucket" "StaticWebBucket" {
+    bucket  = "${var.BaseS3Bucket}"
+
+    lifecycle {
+      create_before_destroy = true
+    }
+}
 
 # Build Core Infrastructure:
 # VPC with two Availaibility Zones.  Each AZ has one Private subnet, one Public subnet, one NAT Gateway.  Shared route table.
