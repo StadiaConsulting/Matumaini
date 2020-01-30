@@ -7,7 +7,7 @@
     "requiresCompatibilities": [
       "FARGATE"
     ],
-    "executionRoleArn": "REPLACE_ME_ECS_SERVICE_ROLE_ARN",
+    "executionRoleArn": "arn:aws:iam::804524942427:role/EcsServiceRole",
     "taskRoleArn": "REPLACE_ME_ECS_TASK_ROLE_ARN",
     "containerDefinitions": [
       {
