@@ -20,7 +20,7 @@ FILE_Replace() {
     echo "First paramater must be a configuration file."
     echo "Second paramater must be the string that will be replaced."
     echo "Third parameter must be the new string"
-    exit 1
+    return 1
   fi
 
   sed "s|$2|$3|g" $1 > $1.$RunID
@@ -34,4 +34,8 @@ if [ $DEBUG ]; then
 fi
 
 FILE_Replace $1 $2 $NewValue
-echo "$?"
+if [ $? != 0 ]; then
+  echo "Error $?"
+else
+  echo "Success"
+fi

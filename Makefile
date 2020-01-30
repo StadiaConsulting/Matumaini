@@ -6,9 +6,10 @@ CHECK := @base -c '\
 	if [[ $(INSPECT) -ne 0 ]]; \
 	then exit $(INSPECT); fi' VALUE
 
-.PHONY:	build-core clean plan-core
 
-build-core:
+.PHONY:	build clean plan
+
+build:
 	${INFO} "building core infrastructure"
 	@ time terraform apply
 	${INFO} "build complete - core infrastructure"
@@ -19,10 +20,11 @@ clean:
 	@ time terraform destroy
 	${INFO} "clean compete - core infrastructure"
 
-plan core:
+plan:
 	${INFO} "planning core infrastructure"
 	@ time terraform plan
 	${INFO} "plan complete - core infrastructure"
+
 
 # Cosmetics - Setting colors to be used in output
 # list of colors - https://misc.flogisoft.com/bash/tip_colors_and_formatting
