@@ -28,7 +28,7 @@ FILE_Replace() {
 }
 
 if [ $DEBUG ]; then
-  echo "$RunID ($1) ($2) ($NewValue)"
+  echo "$RunID ($1) ($2) ($3)"
 fi
 
 FILE_Replace $1 $2 $3

@@ -37,5 +37,7 @@ FILE_Replace $1 $2 $NewValue
 if [ $? != 0 ]; then
   echo "Error $?"
 else
-  echo "Success"
+  FILE=$(basename $1)
+  echo "Moving $FILE"
+  echo "mv $1.$RunID configs/$FILE"
 fi

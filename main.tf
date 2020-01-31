@@ -7,7 +7,7 @@ provider "aws" {
 resource "aws_s3_bucket" "StaticWebBucket" {
     bucket  = "${var.BaseS3Bucket}"
     acl = "public-read"
-    policy = "${file("configs/website-bucket-policy.json")}"
+    policy = "${file("${var.CfgDir}/website-bucket-policy.json")}"
 
     website {
     index_document = "index.html"
@@ -128,7 +128,7 @@ resource "aws_vpc_endpoint" "DynamoDBEndpoint" {
     "${aws_route_table.PrivateRouteTableOne.id}",
     "${aws_route_table.PrivateRouteTableTwo.id}"
    ]
-  policy = "${file("configs/dynamodb-endpoint-policy.json")}"
+  policy = "${file("${var.CfgDir}/dynamodb-endpoint-policy.json")}"
   service_name = "com.amazonaws.${data.aws_region.AWSRegion.name}.dynamodb"
 }
 # End of Core infrastructure build
@@ -152,14 +152,14 @@ resource "aws_security_group_rule" "FargateContainerSecurityGroupRule" {
 resource "aws_iam_role" "EcsServiceRole" {
   name = "EcsServiceRole"
   path = "/"
-  assume_role_policy = "${file("configs/ecs-service-assume-role-policy.json")}"
+  assume_role_policy = "${file("${var.CfgDir}/ecs-service-assume-role-policy.json")}"
 }
 
 resource "aws_iam_policy" "EcsServiceRolePolicy" {
   name = "ecs-service"
   path = "/"
 //  role = "${aws_iam_role.EcsServiceRole.id}"
-  policy = "${file("configs/ecs-service-role-policy.json")}"
+  policy = "${file("${var.CfgDir}/ecs-service-role-policy.json")}"
 }
 resource "aws_iam_policy_attachment" "EcsServiceRoleAttachment" {
   name = "EcsServiceRoleAttachment"
@@ -170,13 +170,62 @@ resource "aws_iam_policy_attachment" "EcsServiceRoleAttachment" {
 resource "aws_iam_role" "ECSTaskRole" {
   name = "ECSTaskRole"
   path = "/"
-  assume_role_policy = "${file("configs/ecs-task-assume-role-policy.json")}"
+  assume_role_policy = "${file("${var.CfgDir}/ecs-task-assume-role-policy.json")}"
 }
 
-resource "null_resource" "dynamodb-json" {
-  provisioner "local-exec" {
-    command = "touch /tmp/foobar"
-  }
+//resource "null_resource" "update-ecs-task-role-policy-json" {
+//  provisioner "local-exec" {
+//    command = " replace-tout-json.sh ${var.CfgDir}/REPLACE/${var.EcsTaskRolePolicyJson} REPLACE_ME_DBTABLE ; while ! test ${var.CfgDir}/${var.EcsTaskRolePolicyJson} -nt ${var.CfgDir}/REPLACE/${var.EcsTaskRolePolicyJson}; do sleep 1; done"
+//  }
+//}
+
+resource "aws_iam_policy" "ECSTaskRolePolicy" {
+  path = "/"
+  policy = "${file("${var.CfgDir}/${var.EcsTaskRolePolicyJson}")}"
+//  depends_on = ["null_resource.update-ecs-task-role-policy-json"]
+}
+
+resource "aws_iam_policy_attachment" "EcsServiceTaskRoleAttachment" {
+  name = "EcsServiceTaskRoleAttachment"
+  roles       = ["${aws_iam_role.ECSTaskRole.name}"]
+  policy_arn = "${aws_iam_policy.ECSTaskRolePolicy.arn}"
+}
+
+resource "aws_ecs_cluster" "ECSCluster" {
+  name = "${var.ECSCluster}"
+}
+
+resource "aws_cloudwatch_log_group" "LogGroup" {
+  name = "${var.DockerAppName}-logs"
+}
+
+module "ecs-task-def" {
+  source = "../modules/terraform-aws-ecs-container-definition"
+  container_name = "${var.ContainerService}"
+  container_image = "804524942427.dkr.ecr.us-east-1.amazonaws.com/kchmatumaini/service"
+  container_cpu = 256
+  container_memory = 512
+  essential = "true"
+  port_mappings = [
+    {
+      containerPort = 8080
+      hostPort      = 8080
+      protocol      = "http"
+    }
+  ]
+
+
+}
+
+resource "aws_ecs_task_definition" "ECSTaskDef" {
+  family = "${var.ContainerService}"
+  network_mode ="awsvpc"
+  cpu = 256
+  memory = 512
+  requires_compatibilities = ["FARGATE"]
+  execution_role_arn = "${aws_iam_role.EcsServiceRole.arn}"
+  task_role_arn =  "${aws_iam_role.ECSTaskRole.arn}"
+  container_definitions = module.ecs-task-def.json
 }
 
 # Created this service link out of band.
@@ -185,12 +234,9 @@ resource "null_resource" "dynamodb-json" {
 
 
 
-
-
-
 # Core Invfrastructure Outputs
 output "REPLACE_ME_VPC_ID" {
-  value = "${aws_vpc.VPC.id}"
+  value = aws_vpc.VPC.id
 }
 output "REPLACE_ME_PUBLIC_SUBNET_ONE" {
   value = "${aws_subnet.PublicSubnetOne.id}"
@@ -204,7 +250,18 @@ output "REPLACE_ME_PRIVATE_SUBNET_ONE" {
 output "REPLACE_ME_PRIVATE_SUBNET_TWO" {
   value = "${aws_subnet.PrivateSubnetTwo.id}"
 }
+output "REPLACE_ME_DBTABLE" {
+  value = "${var.DBTable}"
+}
+output "ECS_JSON" {
+  description = "JSON encoded list of container definitions for use with other terraform resources such as aws_ecs_task_definition"
+  value = module.ecs-task-def.json
+}
 
+output "ECS_JSON_MAP" {
+  description = "JSON encoded container definitions for use with other terraform resources such as aws_ecs_task_definition"
+  value = module.ecs-task-def.json_map
+}
 #output "REPLACE_ME_ECS_SERVICE_ROLE_ARN" {
 #  value = "${aws_iam_role.EcsServiceRole.arn}"
 #}

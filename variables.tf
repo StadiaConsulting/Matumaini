@@ -26,3 +26,24 @@ variable "PrivateTwo" {
 variable "BaseS3Bucket" {
     default = "kch-matumaini"
 }
+
+variable "DBTable" {
+    default = "KCHTable"
+}
+variable "DockerAppName" {
+    default = "kchmatumaini"
+}
+variable "ECSCluster" {
+    default = "KCHMatumaini-Cluster"
+}
+
+variable "CfgDir" {
+  default = "configs"
+  description = "Dirctory of all JSON configuration files used by AWS"
+}
+variable "EcsTaskRolePolicyJson" {
+  default = "ecs-task-role-policy.json"
+}
+variable "ContainerService" {
+    default = "kchmatumainiservice"
+}
