@@ -203,8 +203,6 @@ module "ecs-task-def" {
   source = "../modules/terraform-aws-ecs-container-definition"
   container_name = "${var.ContainerService}"
   container_image = "804524942427.dkr.ecr.us-east-1.amazonaws.com/kchmatumaini/service"
-  container_cpu = 256
-  container_memory = 512
   essential = "true"
   port_mappings = [
     {
@@ -213,8 +211,6 @@ module "ecs-task-def" {
       protocol      = "http"
     }
   ]
-
-
 }
 
 resource "aws_ecs_task_definition" "ECSTaskDef" {
@@ -228,6 +224,64 @@ resource "aws_ecs_task_definition" "ECSTaskDef" {
   container_definitions = module.ecs-task-def.json
 }
 
+resource "aws_ecs_service" "main" {
+  name            = "${var.ECSService}"
+  cluster         = "${aws_ecs_cluster.ECSCluster.id}"
+  task_definition = "${aws_ecs_task_definition.ECSTaskDef.arn}"
+  desired_count   = "1"
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    security_groups = ["${aws_security_group.FargateContainerSecurityGroup.id}"]
+    subnets         = ["${aws_subnet.PrivateSubnetOne.id}",
+                      "${aws_subnet.PrivateSubnetTwo.id}"]
+  }
+
+
+    load_balancer {
+      target_group_arn = "${aws_lb_target_group.AppNLB_TG.id}"
+      container_name   = "${var.ContainerService}"
+      container_port   = "8080"
+    }
+
+    depends_on = [
+      "aws_lb_listener.AppNLBListener",
+    ]
+  }
+
+  resource "aws_lb" "AppNLB" {
+    name               = "${var.DockerAppName}-nlb"
+    internal           = false
+    load_balancer_type = "network"
+    subnets            = ["${aws_subnet.PublicSubnetOne.id}", "${aws_subnet.PublicSubnetTwo.id}"]
+    enable_deletion_protection = false
+  }
+
+  resource "aws_lb_target_group" "AppNLB_TG" {
+    name     = "${var.NLB_TG}"
+    port     = 8080
+    protocol = "TCP"
+    vpc_id   = "${aws_vpc.VPC.id}"
+    target_type = "ip"
+    health_check {
+      interval = 10
+      path = "/"
+      protocol = "HTTP"
+      healthy_threshold = 3
+      unhealthy_threshold = 3
+    }
+  }
+
+  resource "aws_lb_listener" "AppNLBListener" {
+    load_balancer_arn = "${aws_lb.AppNLB.arn}"
+    port              = "80"
+    protocol          = "TCP"
+
+    default_action {
+      type             = "forward"
+      target_group_arn = "${aws_lb_target_group.AppNLB_TG.arn}"
+    }
+  }
 # Created this service link out of band.
 #aws iam create-service-linked-role --aws-service-name ecs.amazonaws.com
 

@@ -47,3 +47,11 @@ variable "EcsTaskRolePolicyJson" {
 variable "ContainerService" {
     default = "kchmatumainiservice"
 }
+
+variable "ECSService" {
+    default = "KCHMatumaini-Service"
+}
+
+variable "NLB_TG" {
+    default = "KCHMatumaini-TG"
+}
