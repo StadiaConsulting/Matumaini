@@ -22,6 +22,7 @@
 				"dynamodb:UpdateItem",
 				"dynamodb:GetItem"
 			],
-			"Resource": "arn:aws:dynamodb:*:*:table/${var.DBTable}*"
+			"Resource": "arn:aws:dynamodb:*:*:table/REPLACE_ME_DBTABLE*"
 		}
 	]
+}

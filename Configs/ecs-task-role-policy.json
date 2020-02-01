@@ -22,7 +22,7 @@
 				"dynamodb:UpdateItem",
 				"dynamodb:GetItem"
 			],
-			"Resource": "arn:aws:dynamodb:*:*:table/KCHTable*"
+			"Resource": "arn:aws:dynamodb:*:*:table/MatumainiTable*"
 		}
 	]
 }

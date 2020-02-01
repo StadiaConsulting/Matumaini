@@ -54,8 +54,8 @@ resource "aws_s3_bucket_policy" "AppCodeBucketPolicy" {
 EOF
 }
 
-resource "aws_iam_role" "KCHMatumainiServiceCodePipelineServiceRole" {
-  name = "KCHMatumainiServiceCodePipelineServiceRole"
+resource "aws_iam_role" "MatumainiServiceCodePipelineServiceRole" {
+  name = "MatumainiServiceCodePipelineServiceRole"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -74,7 +74,7 @@ resource "aws_iam_role" "KCHMatumainiServiceCodePipelineServiceRole" {
 EOF
 }
 
-resource "aws_iam_policy" "KCHMatumainiService-codepipeline-service-policy" {
+resource "aws_iam_policy" "MatumainiService-codepipeline-service-policy" {
   path = "/"
 
   policy = <<EOF
@@ -127,14 +127,14 @@ resource "aws_iam_policy" "KCHMatumainiService-codepipeline-service-policy" {
 EOF
 }
 
-resource "aws_iam_policy_attachment" "KCHMatumainiServiceCodePipelineServiceRoleAttachment" {
-  name = "KCHMatumainiServiceCodePipelineServiceRoleAttachment"
-  roles       = ["${aws_iam_role.KCHMatumainiServiceCodePipelineServiceRole.name}"]
-  policy_arn = "${aws_iam_policy.KCHMatumainiService-codepipeline-service-policy.arn}"
+resource "aws_iam_policy_attachment" "MatumainiServiceCodePipelineServiceRoleAttachment" {
+  name = "MatumainiServiceCodePipelineServiceRoleAttachment"
+  roles       = ["${aws_iam_role.MatumainiServiceCodePipelineServiceRole.name}"]
+  policy_arn = "${aws_iam_policy.MatumainiService-codepipeline-service-policy.arn}"
 }
 
-resource "aws_iam_role" "KCHMatumainiServiceCodeBuildServiceRole" {
-  name = "KCHMatumainiServiceCodeBuildServiceRole"
+resource "aws_iam_role" "MatumainiServiceCodeBuildServiceRole" {
+  name = "MatumainiServiceCodeBuildServiceRole"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -154,7 +154,7 @@ resource "aws_iam_role" "KCHMatumainiServiceCodeBuildServiceRole" {
 EOF
 }
 
-resource "aws_iam_policy" "KCHMatumainiService-CodeBuildServicePolicy" {
+resource "aws_iam_policy" "MatumainiService-CodeBuildServicePolicy" {
   path = "/"
 
   policy = <<EOF
@@ -172,7 +172,7 @@ resource "aws_iam_policy" "KCHMatumainiService-CodeBuildServicePolicy" {
 			],
 			"Resource":
 
-					"arn:aws:codecommit:${data.aws_region.AWSRegion.name}:${data.aws_billing_service_account.Account.id}:KCHMatumainiServiceRepository"
+					"arn:aws:codecommit:${data.aws_region.AWSRegion.name}:${data.aws_billing_service_account.Account.id}:MatumainiServiceRepository"
 		},
 		{
 			"Effect": "Allow",
@@ -206,18 +206,18 @@ resource "aws_iam_policy" "KCHMatumainiService-CodeBuildServicePolicy" {
 EOF
 }
 
-resource "aws_iam_policy_attachment" "KCHMatumainiServiceCodeBuildServiceRoleAttachment" {
-  name = "KCHMatumainiServiceCodeBuildServiceRoleAttachment"
-  roles       = ["${aws_iam_role.KCHMatumainiServiceCodeBuildServiceRole.name}"]
-  policy_arn = "${aws_iam_policy.KCHMatumainiService-CodeBuildServicePolicy.arn}"
+resource "aws_iam_policy_attachment" "MatumainiServiceCodeBuildServiceRoleAttachment" {
+  name = "MatumainiServiceCodeBuildServiceRoleAttachment"
+  roles       = ["${aws_iam_role.MatumainiServiceCodeBuildServiceRole.name}"]
+  policy_arn = "${aws_iam_policy.MatumainiService-CodeBuildServicePolicy.arn}"
 }
 
-resource "aws_ecr_repository" "KCHMatumainiECR" {
+resource "aws_ecr_repository" "MatumainiECR" {
   name = "${var.DockerAppName}/service"
 }
 
-resource "aws_ecr_repository_policy" "KCHMatumainiECRPolicy" {
-  repository = "${aws_ecr_repository.KCHMatumainiECR.name}"
+resource "aws_ecr_repository_policy" "MatumainiECRPolicy" {
+  repository = "${aws_ecr_repository.MatumainiECR.name}"
 
   policy = <<EOF
 {
@@ -228,7 +228,7 @@ resource "aws_ecr_repository_policy" "KCHMatumainiECRPolicy" {
       "Effect": "Allow",
       "Principal": {
         "AWS": [
-         "${aws_iam_role.KCHMatumainiServiceCodeBuildServiceRole.arn}"
+         "${aws_iam_role.MatumainiServiceCodeBuildServiceRole.arn}"
         ]
       },
       "Action": [
@@ -262,8 +262,8 @@ resource "aws_codecommit_repository" "AppCodeCommitRepo" {
 
 
 output "REPLACE_ME_CODEBUILD_ROLE_ARN" {
-  value = "${aws_iam_role.KCHMatumainiServiceCodeBuildServiceRole.arn}"
+  value = "${aws_iam_role.MatumainiServiceCodeBuildServiceRole.arn}"
 }
 output "REPLACE_ME_CODEPIPELINE_ROLE_ARN" {
-  value = "${aws_iam_role.KCHMatumainiServiceCodePipelineServiceRole.arn}"
+  value = "${aws_iam_role.MatumainiServiceCodePipelineServiceRole.arn}"
 }
